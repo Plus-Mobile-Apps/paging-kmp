@@ -1,87 +1,64 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    kotlin("multiplatform")
-    kotlin("native.cocoapods")
-    id("com.android.library")
-    id("org.kodein.mock.mockmp") version Deps.KosiLibs.MOCK_KMP_VERSION
-    id("paging.publication")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.kmp.library)
+    alias(libs.plugins.maven.publish)
 }
-
-
-group = "com.plusmobileapps"
-version = Deps.PAGING_VERSION
 
 kotlin {
     android {
-        publishLibraryVariants("release", "debug")
+        namespace = "com.plusmobileapps.paging"
+        compileSdk = libs.versions.android.compileSdk.get().toInt()
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        compilerOptions.jvmTarget.set(JvmTarget.JVM_11)
+        withHostTest {}
     }
-    iosX64()
     iosArm64()
     iosSimulatorArm64()
 
-    cocoapods {
-        summary = "Paging helper KMM library"
-        homepage = "https://github.com/plusmobileapps/rick-and-morty-kmp"
-        version = Deps.PAGING_VERSION
-        ios.deploymentTarget = "14.1"
-        framework {
-            baseName = "paging"
-        }
-    }
-    
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(Deps.Jetbrains.coroutines)
-                implementation(Deps.PlusMobileApps.konnectivity)
-                implementation(Deps.RushWolf.multiplatformSettings)
-                implementation(Deps.Jetbrains.dateTime)
-            }
+        commonMain.dependencies {
+            implementation(libs.kotlinx.coroutines.core)
+            implementation(libs.konnectivity)
+            implementation(libs.multiplatform.settings.noArg)
         }
-        val commonTest by getting {
-            dependencies {
-                implementation(kotlin("test"))
-                implementation(Deps.Jetbrains.coroutinesTesting)
-                implementation(Deps.CashApp.turbine)
-                implementation(Deps.RushWolf.multiplatformSettingsTest)
-                implementation(Deps.Kotest.assertionCore)
-            }
-        }
-        val androidMain by getting
-        val androidTest by getting
-        val iosX64Main by getting
-        val iosArm64Main by getting
-        val iosSimulatorArm64Main by getting
-        val iosMain by creating {
-            dependsOn(commonMain)
-            iosX64Main.dependsOn(this)
-            iosArm64Main.dependsOn(this)
-            iosSimulatorArm64Main.dependsOn(this)
-        }
-        val iosX64Test by getting
-        val iosArm64Test by getting
-        val iosSimulatorArm64Test by getting
-        val iosTest by creating {
-            dependsOn(commonTest)
-            iosX64Test.dependsOn(this)
-            iosArm64Test.dependsOn(this)
-            iosSimulatorArm64Test.dependsOn(this)
+        commonTest.dependencies {
+            implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.turbine)
+            implementation(libs.multiplatform.settings.test)
+            implementation(libs.kotest.assertions.core)
         }
     }
 }
 
-android {
-    namespace = "com.plusmobileapps.paging"
-    compileSdk = Deps.Android.compileSDK
-    defaultConfig {
-        minSdk = Deps.Android.minSDK
-        targetSdk = Deps.Android.targetSDK
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+    coordinates(artifactId = "paging")
+
+    pom {
+        name.set("Paging KMP")
+        description.set("A Kotlin Multiplatform paging helper for in-memory or cached data sources.")
+        url.set("https://github.com/plusmobileapps/paging-kmp")
+        licenses {
+            license {
+                name.set("MIT")
+                url.set("https://opensource.org/licenses/MIT")
+            }
+        }
+        developers {
+            developer {
+                id.set("plusmobileapps")
+                name.set("Andrew Steinmetz")
+                email.set("andrew@plusmobileapps.com")
+            }
+        }
+        scm {
+            url.set("https://github.com/plusmobileapps/paging-kmp")
+            connection.set("scm:git:git://github.com/plusmobileapps/paging-kmp.git")
+            developerConnection.set("scm:git:ssh://git@github.com/plusmobileapps/paging-kmp.git")
+        }
     }
-}
-
-mockmp {
-    usesHelper = true
-}
-
-tasks.getByName<org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeSimulatorTest>("iosX64Test") {
-    deviceId = "iPhone 14"
 }

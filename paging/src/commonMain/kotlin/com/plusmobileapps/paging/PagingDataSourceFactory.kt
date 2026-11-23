@@ -4,7 +4,7 @@ import com.plusmobileapps.konnectivity.Konnectivity
 import com.russhwolf.settings.Settings
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 
 object PagingDataSourceFactory : InMemoryPageLoader.Factory, CachedPageLoader.Factory {
     private val konnectivity = Konnectivity()
