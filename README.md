@@ -61,8 +61,28 @@ val loader = PagingDataSourceFactory.create(
 ./gradlew allTests
 ```
 
-Publishing goes to Maven Central through the [vanniktech maven-publish plugin](https://vanniktech.github.io/gradle-maven-publish-plugin/central/). Set `mavenCentralUsername`, `mavenCentralPassword` and the `signingInMemoryKey*` properties in `~/.gradle/gradle.properties` (or as `ORG_GRADLE_PROJECT_` env vars), then:
+## Releasing
+
+Releases go to Maven Central through the [vanniktech maven-publish plugin](https://vanniktech.github.io/gradle-maven-publish-plugin/central/).
+
+### From GitHub (recommended)
+
+Publish a GitHub release with a tag like `v0.2.0`. The [publish workflow](.github/workflows/publish.yml) builds, tests, signs and releases `com.plusmobileapps:paging:0.2.0` on a macOS runner.
+
+It needs these repository secrets:
+
+| Secret | Value |
+| --- | --- |
+| `MAVEN_CENTRAL_USERNAME` | Central Portal user token username |
+| `MAVEN_CENTRAL_PASSWORD` | Central Portal user token password |
+| `SIGNING_KEY` | `gpg --export-secret-keys --armor <KEY_ID>` |
+| `SIGNING_KEY_ID` | Last 8 characters of the key id |
+| `SIGNING_KEY_PASSWORD` | Key passphrase |
+
+### From a Mac
+
+Put `mavenCentralUsername`, `mavenCentralPassword` and `signing.keyId` / `signing.password` / `signing.secretKeyRingFile` in `~/.gradle/gradle.properties`, then:
 
 ```bash
-./gradlew publishToMavenCentral
+./gradlew publishAndReleaseToMavenCentral --no-configuration-cache -PVERSION_NAME=0.2.0
 ```
